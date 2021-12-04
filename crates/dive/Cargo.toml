@@ -1,0 +1,10 @@
+[package]
+name = "dive"
+version = "0.0.1"
+edition = "2018"
+
+
+[dependencies]
+clap = "3.0.0-beta.2"
+strum = "0.21.0"      # Helpful macros for working with enums and strings
+strum_macros = "0.21" # Helpful macros for working with enums and strings
