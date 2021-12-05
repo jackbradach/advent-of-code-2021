@@ -27,15 +27,30 @@ impl SonarSweep {
      * from the previous measurement.
      */
     fn increase_count(&self) -> u32 {
+        self.increase_count_sliding_window(1)
+    }
+
+    
+    fn increase_count_sliding_window(&self, window_size: usize) -> u32 {
         let mut increase_count = 0;
-        let mut last_depth: Option<u32> = None;
-        for depth in &self.depths {
-            if let Some(last_depth) = last_depth {
-                if depth > &last_depth {
+        let mut chunks: Vec<u32> = Vec::new();
+
+        for i in 0..(self.depths.len() - (window_size - 1)) {
+            let mut sum = 0;
+            for j in 0..window_size {
+                sum += self.depths[i+j];
+            }
+            chunks.push(sum);
+        }
+
+        let mut last: Option<u32> = None;
+        for chunk in chunks {
+            if let Some(last) = last {
+                if chunk > last {
                     increase_count += 1;
                 }    
             }
-            last_depth = Some(*depth);
+            last = Some(chunk);
         }
         increase_count
     }
@@ -62,7 +77,8 @@ fn main() {
     };
 
     let sweep = SonarSweep::from_file(input);
-    println!("depth increases: {}", sweep.increase_count());
+    println!("Part 1: depth increases = {}", sweep.increase_count());
+    println!("Part 2: depth increases = {}", sweep.increase_count_sliding_window(3));
 }
 
 #[cfg(test)]
@@ -80,5 +96,19 @@ mod tests {
 
         let sweep = SonarSweep { depths, };
         assert_eq!(sweep.increase_count(), INCREASE_COUNT);
+    }
+
+    #[test]
+    fn test_sonarsweep_count_depth_increase_sliding_window() {
+        /* This one tests the result with the sliding window. */
+        const INCREASE_COUNT: u32 = 5;
+        const WINDOW_SIZE: usize = 3;
+        let depths = vec![
+            199, 200, 208, 210, 200,
+            207, 240, 269, 260, 263
+        ];
+
+        let sweep = SonarSweep { depths, };
+        assert_eq!(sweep.increase_count_sliding_window(WINDOW_SIZE), INCREASE_COUNT);
     }
 }
