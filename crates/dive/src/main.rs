@@ -78,16 +78,38 @@ impl IntoIterator for &SubmarineCommands {
 }
 
 struct Submarine {
-    horizontal_position: u32,
-    depth_position: u32,
+    aim: u32,
+    pos_horizontal: u32,
+    pos_depth: u32,
 }
 
 
 impl Submarine {
     fn new() -> Submarine {
         Submarine {
-            horizontal_position: 0,
-            depth_position: 0,
+            aim: 0,
+            pos_horizontal: 0,
+            pos_depth: 0,
+        }
+    }
+
+    /* Part 1 has us apply commands using a misunderstanding of how the
+     * Submarine works.  I left it in so I can still print out both
+     * part's solutions.
+     */
+    fn apply_commands_wrong(&mut self, commands: &SubmarineCommands) {
+        for command in commands {
+            match command.direction {
+                SubmarineDirection::Forward => {
+                    self.pos_horizontal += command.distance;
+                },
+                SubmarineDirection::Up => {
+                    self.pos_depth -= command.distance;
+                },
+                SubmarineDirection::Down => {
+                    self.pos_depth += command.distance;
+                },
+            }
         }
     }
 
@@ -95,24 +117,25 @@ impl Submarine {
         for command in commands {
             match command.direction {
                 SubmarineDirection::Forward => {
-                    self.horizontal_position += command.distance;
+                    self.pos_horizontal += command.distance;
+                    self.pos_depth += command.distance * self.aim;
                 },
                 SubmarineDirection::Up => {
-                    self.depth_position -= command.distance;
+                    self.aim -= command.distance;
                 },
                 SubmarineDirection::Down => {
-                    self.depth_position += command.distance;
+                    self.aim += command.distance;
                 },
             }
         }
     }
 
-    fn horizontal_position(&self) -> u32 {
-        self.horizontal_position
+    fn position_horizontal(&self) -> u32 {
+        self.pos_horizontal
     }
 
-    fn depth_position(&self) -> u32 {
-        self.depth_position
+    fn position_depth(&self) -> u32 {
+        self.pos_depth
     }
 }
 
@@ -138,12 +161,20 @@ fn main() {
 
     let mut submarine = Submarine::new();
     let submarine_commands = SubmarineCommands::from_file(input);
+    submarine.apply_commands_wrong(&submarine_commands);
+    println!("Part 1: x({}) * y({}) = {}",
+        submarine.position_horizontal(),
+        submarine.position_depth(),
+        submarine.position_horizontal() * submarine.position_depth()
+    );
+
+    let mut submarine = Submarine::new();
     submarine.apply_commands(&submarine_commands);
-    println!("Submarine Position: x={} y={} => x * y = {}",
-        submarine.horizontal_position(),
-        submarine.depth_position(),
-        submarine.horizontal_position() * submarine.depth_position()
-    )
+    println!("Part 2: x({}) * y({}) = {}",
+        submarine.position_horizontal(),
+        submarine.position_depth(),
+        submarine.position_horizontal() * submarine.position_depth()
+    );
 }
 
 #[cfg(test)]
@@ -153,9 +184,29 @@ mod tests {
     #[test]
     fn test_dive_part1() {
         /* The dataset and increase count were given on the webpage. */
-        const HORIZONTAL_POSITION: u32 = 15;
-        const DEPTH_POSITION: u32 = 10;
+        const POSITION_HORIZONTAL: u32 = 15;
+        const POSITION_DEPTH: u32 = 10;
         let mut commands = vec![
+            "forward 5".to_string(),
+            "down 5".to_string(),
+            "forward 8".to_string(),
+            "up 3".to_string(),
+            "down 8".to_string(),
+            "forward 2".to_string(),
+        ];
+        let mut submarine = Submarine::new();
+        let commands = SubmarineCommands::from_strs(&commands);
+        submarine.apply_commands_wrong(&commands);
+        assert_eq!(submarine.position_horizontal(), POSITION_HORIZONTAL);
+        assert_eq!(submarine.position_depth(), POSITION_DEPTH);
+    }
+
+    #[test]
+    fn test_dive_part2() {
+        /* The dataset and increase count were given on the webpage. */
+        const POSITION_HORIZONTAL: u32 = 15;
+        const POSITION_DEPTH: u32 = 60;
+        let commands = vec![
             "forward 5".to_string(),
             "down 5".to_string(),
             "forward 8".to_string(),
@@ -167,7 +218,7 @@ mod tests {
         let mut submarine = Submarine::new();
         let commands = SubmarineCommands::from_strs(&commands);
         submarine.apply_commands(&commands);
-        assert_eq!(submarine.horizontal_position(), HORIZONTAL_POSITION);
-        assert_eq!(submarine.depth_position(), DEPTH_POSITION);
+        assert_eq!(submarine.position_horizontal(), POSITION_HORIZONTAL);
+        assert_eq!(submarine.position_depth(), POSITION_DEPTH);
     }
 }
