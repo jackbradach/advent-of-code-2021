@@ -58,7 +58,7 @@ impl SubmarineCommands {
         let mut submarine_commands: Vec<SubmarineCommand> = Vec::new();
         for command in command_strs {
             submarine_commands.push(
-                SubmarineCommand::from_str(command)
+                SubmarineCommand::from_str(&command)
             );
         }
         SubmarineCommands {
@@ -151,21 +151,21 @@ mod tests {
     use super::*;
     
     #[test]
-    fn test_dive() {
+    fn test_dive_part1() {
         /* The dataset and increase count were given on the webpage. */
         const HORIZONTAL_POSITION: u32 = 15;
         const DEPTH_POSITION: u32 = 10;
-        let commands = vec![
-            "forward 5",
-            "down 5",
-            "forward 8",
-            "up 3",
-            "down 8",
-            "forward 2",
+        let mut commands = vec![
+            "forward 5".to_string(),
+            "down 5".to_string(),
+            "forward 8".to_string(),
+            "up 3".to_string(),
+            "down 8".to_string(),
+            "forward 2".to_string(),
         ];
 
         let mut submarine = Submarine::new();
-        let commands = SubmarineCommands::from_strs(commands);
+        let commands = SubmarineCommands::from_strs(&commands);
         submarine.apply_commands(&commands);
         assert_eq!(submarine.horizontal_position(), HORIZONTAL_POSITION);
         assert_eq!(submarine.depth_position(), DEPTH_POSITION);
