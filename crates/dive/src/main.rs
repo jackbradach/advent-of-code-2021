@@ -141,7 +141,7 @@ impl Submarine {
 
 fn main() {
     // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("dive")
+    let argmatches = App::new("Dive!")
         .version("0.1")
         .author("Jack Bradach <jack@bradach.net>")
         .about("Advent of Code 2021 - Day 2: Dive!")
@@ -186,7 +186,7 @@ mod tests {
         /* The dataset and increase count were given on the webpage. */
         const POSITION_HORIZONTAL: u32 = 15;
         const POSITION_DEPTH: u32 = 10;
-        let mut commands = vec![
+        let commands = vec![
             "forward 5".to_string(),
             "down 5".to_string(),
             "forward 8".to_string(),
