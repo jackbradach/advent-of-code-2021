@@ -80,6 +80,73 @@ impl BinaryDiagnostic {
         gamma
     }
 
+    fn oxygen(&self) -> u32 {
+        const MAX: usize = 32;
+        let mut density_ones: [u32; MAX] = [0; MAX];
+        let mut density_zeroes: [u32; MAX] = [0; MAX];
+        /* Need to scan through each bit, find the most common,
+         * and then use it to prune the rest of the vector. */
+        let mut diag = self.report.clone();
+        for i in (0..self.report_width).rev() {
+            for v in &diag {
+                if v & (1 << i) == 0 {
+                    density_zeroes[i] += 1;
+                } else {
+                    density_ones[i] += 1;
+                }
+            }
+            let polarity = if density_ones[i] >= density_zeroes[i] { 1 } else { 0 };
+            diag = diag
+                .iter()
+                .filter_map(|&v| {
+                    if ((v & (1 << i)) >> i) == polarity {
+                        Some(v)
+                    } else { 
+                        None 
+                    }
+                }).collect::<Vec<_>>();
+            if diag.len() == 1 {
+                break;
+            }
+        }
+        let oxygen = diag.pop().unwrap();
+        oxygen
+    }
+
+    fn co2(&self) -> u32 {
+        const MAX: usize = 32;
+        let mut density_ones: [u32; MAX] = [0; MAX];
+        let mut density_zeroes: [u32; MAX] = [0; MAX];
+        /* Need to scan through each bit, find the most common,
+         * and then use it to prune the rest of the vector. */
+        let mut diag = self.report.clone();
+        for i in (0..self.report_width).rev() {
+            for v in &diag {
+                if v & (1 << i) == 0 {
+                    density_zeroes[i] += 1;
+                } else {
+                    density_ones[i] += 1;
+                }
+            }
+            let polarity = if density_zeroes[i] <= density_ones[i] { 0 } else { 1 };
+            diag = diag
+                .iter()
+                .filter_map(|&v| {
+                    if ((v & (1 << i)) >> i) == polarity {
+                        // println!("+");
+                        Some(v)
+                    } else { 
+                        // println!("-");
+                        None 
+                    }
+                }).collect::<Vec<_>>();
+            if diag.len() == 1 {
+                break;
+            }
+        }
+        let co2 = diag.pop().unwrap();
+        co2
+    }
 }
 
 fn main() {
@@ -108,6 +175,12 @@ fn main() {
         diag.episilon(),
         diag.gamma() * diag.episilon()
     );
+
+    println!("Part 2: oxygen = {}, CO2 = {}, life support = {}",
+    diag.oxygen(),
+    diag.co2(),
+    diag.oxygen() * diag.co2()
+);
 }
 
 #[cfg(test)]
@@ -127,6 +200,21 @@ mod tests {
         let diag = BinaryDiagnostic::from_vecstring(report);
         assert_eq!(GAMMA, diag.gamma());
         assert_eq!(EPSILON, diag.episilon());
+    }
+
+    #[test]
+    fn test_bindiag_part2() {
+        const OXYGEN: u32 = 23;
+        const CO2: u32 = 10;
+        let report = vec![
+            "00100", "11110", "10110", "10111", "10101", "01111",
+            "00111", "11100", "10000", "11001", "00010", "01010",
+        ];
+        // let diag = BinaryDiagnostic { report_width: 5, report, };
+        let report = report.iter().map(|s| s.to_string()).collect();
+        let diag = BinaryDiagnostic::from_vecstring(report);
+        assert_eq!(OXYGEN, diag.oxygen());
+        assert_eq!(CO2, diag.co2());
     }
 
 }
