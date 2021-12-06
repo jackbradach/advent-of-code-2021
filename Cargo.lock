@@ -109,6 +109,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lanternfish"
+version = "0.0.1"
+dependencies = [
+ "clap",
+ "strum",
+ "strum_macros",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
