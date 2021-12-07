@@ -18,3 +18,10 @@ $ cargo run --bin dive -- data/dive.txt
 $ cargo test --package bindiag -- --nocapture
 
 $ cargo run --bin bindiag -- data/bindiag.txt
+
+### **Day 6: Lantern Fish**
+
+$ cargo test --package lanternfish -- --nocapture
+
+$ cargo run --bin lanternfish -- data/lanternfish.txt
+

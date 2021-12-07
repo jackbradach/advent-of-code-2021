@@ -1,20 +1,15 @@
 /*
- * https://adventofcode.com/2021/day/4
+ * https://adventofcode.com/2021/day/6
  */
 use clap::{App, Arg};
 use std::path::Path;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
 
-
-// FIXME - jbradach - should change implementation so we're tracking number of fish in
-// FIXME - each counter state, so there's only 8 bins.
-// 
 // Each bin in the Vec represents how many fish in the population have a particular
 // counter.  Each round, pop the head off (shifting everyone's counter down by 1),
 // Add this value to the now counter[6] and push the new value to the end of the
 // vec (bringing us back up to 8 elements) 
-
 #[derive(Clone, Debug)]
 struct Lanternfish {
     counter: Vec<u64>
@@ -111,6 +106,4 @@ mod tests {
         let fishes = Lanternfish::from_string(&fish);
         assert_eq!(fishes.population_after_day(DAY), EXPECTED_FISH_COUNT);
     }
-
-
 }
