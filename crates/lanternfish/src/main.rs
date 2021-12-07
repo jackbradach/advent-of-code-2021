@@ -7,62 +7,61 @@ use std::io::{BufReader, BufRead};
 use std::fs::File;
 
 
+// FIXME - jbradach - should change implementation so we're tracking number of fish in
+// FIXME - each counter state, so there's only 8 bins.
+// 
+// Each bin in the Vec represents how many fish in the population have a particular
+// counter.  Each round, pop the head off (shifting everyone's counter down by 1),
+// Add this value to the now counter[6] and push the new value to the end of the
+// vec (bringing us back up to 8 elements) 
+
 #[derive(Clone, Debug)]
 struct Lanternfish {
-    counter: u32
+    counter: Vec<u64>
 }
 
-#[derive(Clone, Debug)]
-struct Lanternfishes {
-    fish: Vec<Lanternfish>
-}
+impl Lanternfish {
 
-impl Lanternfishes {
-
-    fn from_file(input: &Path) -> Lanternfishes {
+    fn from_file(input: &Path) -> Lanternfish {
         let file = File::open(input).unwrap();
         let population: Vec<String> =
             BufReader::new(file)
                 .lines()
                 .map(|s| s.unwrap())
                 .collect();
-        Lanternfishes::from_string(&population[0])
+        Lanternfish::from_string(&population[0])
     }
 
-    fn from_string(population: &String) -> Lanternfishes {
-        let lanternfishes: Vec<Lanternfish> =
+    fn from_string(population: &String) -> Lanternfish {
+        let initial_population: Vec<u32> =
             population
                 .split(",")
-                .map(|counter| Lanternfish { counter: counter.parse::<u32>().unwrap() })
+                .map(|v| v.parse::<u32>().unwrap())
                 .collect();
-        Lanternfishes {
-            fish: lanternfishes,
+        let mut lanternfish = Lanternfish { counter: Vec::new() };
+        for _ in 0..9 {
+            lanternfish.counter.push(0);
         }
+
+        for v in initial_population {
+            lanternfish.counter[v as usize] += 1;
+        }
+        lanternfish
     }
 
     fn population_after_day(&self, day: u32) -> u64 {
-        let mut fish = self.fish.clone();
+        let mut fish = self.counter.clone();
 
         for _ in 0..day {
-            let mut add_fish: u32 = 0;
-            for mut f in &mut fish {
-                match f.counter {
-                    0 => {
-                        add_fish += 1;
-                        f.counter = 6;
-                    },
-                    _ => {
-                        f.counter -= 1;
-                    }
-                }
-            }
-            if add_fish > 0 {
-                for _ in 0..add_fish {
-                    fish.push(Lanternfish{ counter: 8});
-                }
-            }
+            let spawn_count = fish.remove(0);
+            fish[6] += spawn_count;
+            fish.push(spawn_count);
         }
-        fish.len() as u64
+        let mut population: u64 = 0;
+        for f in fish {
+            population += f as u64;
+        }
+        population
     }
 }
 
@@ -86,9 +85,9 @@ fn main() {
         }
     };
 
-    let fishes = Lanternfishes::from_file(input);
+    let fishes = Lanternfish::from_file(input);
     println!("Part 1: Population after 80 days = {}", fishes.population_after_day(80));
-    // println!("Part 1: Population after 256 days = {}", fishes.population_after_day(256));
+    println!("Part 2: Population after 256 days = {}", fishes.population_after_day(256));
 }
 
 #[cfg(test)]
@@ -97,11 +96,14 @@ mod tests {
     
     #[test]
     fn test_lanternfish_part1() {
-        const DAY: u32 = 80;
-        const EXPECTED_FISH_COUNT: u64 = 5934;
+        const DAY_A: u32 = 18;
+        const EXPECTED_FISH_COUNT_A: u64 = 26;
+        const DAY_B: u32 = 80;
+        const EXPECTED_FISH_COUNT_B: u64 = 5934;
         let fish = "3,4,3,1,2".to_string();
-        let fishes = Lanternfishes::from_string(&fish);
-        assert_eq!(fishes.population_after_day(DAY), EXPECTED_FISH_COUNT);
+        let fishes = Lanternfish::from_string(&fish);
+        assert_eq!(fishes.population_after_day(DAY_A), EXPECTED_FISH_COUNT_A);
+        assert_eq!(fishes.population_after_day(DAY_B), EXPECTED_FISH_COUNT_B);
     }
 
     // #[test]
