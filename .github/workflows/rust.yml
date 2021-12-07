@@ -20,6 +20,11 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
-    - name: Generate Gource
+    - name: Generate gource
       uses: NBprojekt/gource-action@v1.0.3
+    - name: 'Upload gource video'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Gource
+          path: ./gource/gource.mp4
 
