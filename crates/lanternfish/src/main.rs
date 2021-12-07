@@ -96,24 +96,21 @@ mod tests {
     
     #[test]
     fn test_lanternfish_part1() {
-        const DAY_A: u32 = 18;
-        const EXPECTED_FISH_COUNT_A: u64 = 26;
-        const DAY_B: u32 = 80;
-        const EXPECTED_FISH_COUNT_B: u64 = 5934;
+        const DAY: u32 = 18;
+        const EXPECTED_FISH_COUNT: u64 = 26;
         let fish = "3,4,3,1,2".to_string();
         let fishes = Lanternfish::from_string(&fish);
-        assert_eq!(fishes.population_after_day(DAY_A), EXPECTED_FISH_COUNT_A);
-        assert_eq!(fishes.population_after_day(DAY_B), EXPECTED_FISH_COUNT_B);
+        assert_eq!(fishes.population_after_day(DAY), EXPECTED_FISH_COUNT);
     }
 
-    // #[test]
-    // fn test_lanternfish_part2() {
-    //     const DAY: u32 = 256;
-    //     const EXPECTED_FISH_COUNT: u64 = 26984457539;
-    //     let fish = "3,4,3,1,2".to_string();
-    //     let fishes = Lanternfishes::from_string(&fish);
-    //     assert_eq!(fishes.population_after_day(DAY), EXPECTED_FISH_COUNT);
-    // }
+    #[test]
+    fn test_lanternfish_part2() {
+        const DAY: u32 = 256;
+        const EXPECTED_FISH_COUNT: u64 = 26984457539;
+        let fish = "3,4,3,1,2".to_string();
+        let fishes = Lanternfish::from_string(&fish);
+        assert_eq!(fishes.population_after_day(DAY), EXPECTED_FISH_COUNT);
+    }
 
 
 }
