@@ -2,10 +2,9 @@
  * https://adventofcode.com/2021/day/4
  */
 
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::io::{BufReader, BufRead};
 use std::fs::File;
-use std::fs;
 use std::fmt;
 
 use clap::{App, Arg};
@@ -50,15 +49,15 @@ impl BingoCard {
         }
     }
 
-    fn check_win(&self) -> bool {
-        let h = self.check_win_horiz();
-        let v = self.check_win_vert();
-        println!("h={:?} v={:?}", h, v);
+    /* Returns true if this card is a winner */
+    fn is_winner(&self) -> bool {
+        let h = self.is_winner_horiz();
+        let v = self.is_winner_vert();
         return h || v;
     }
 
     /* Check for 5-in-a-row horizontally */
-    fn check_win_horiz(&self) -> bool {
+    fn is_winner_horiz(&self) -> bool {
         let mut run: u32 = 0;
         for y in 0..5 {
             run = 0;
@@ -77,7 +76,7 @@ impl BingoCard {
     }
 
     /* Check for 5-in-a-row vertically */
-    fn check_win_vert(&self) -> bool {
+    fn is_winner_vert(&self) -> bool {
         let mut run: u32 = 0;
         for x in 0..5 {
             run = 0;
@@ -95,48 +94,10 @@ impl BingoCard {
         return run == 5;
     }
 
-    /* Check for 5-in-a-row on the diagonals */
-    // TODO: 2021/12/07 - jbradach - remove this, it wasn't needed for the puzzle.
-    // fn check_win_diag(&self) -> Option<Vec<u8>> {
-    //     let mut run = 0;
-    //     /* Upper left to lower right */
-    //     for d in 0..5 {
-    //         if self.marked[d][d] {
-    //             run += 1;
-    //         } else {
-    //             break;
-    //         }
-    //     }
-    //     if run == 5 {
-    //         let mut winner: Vec<u8> = Vec::new();
-    //         for d in 0..5 {
-    //             winner.push(self.card[d][d]);
-    //         }
-    //         return Some(winner);
-    //     }
-
-    //     /* Lower left to upper right */
-    //     for d in 0..5 {
-    //         if self.marked[4-d][d] {
-    //             run += 1;
-    //         } else {
-    //             break;
-    //         }
-    //     }
-    //     if run == 5 {
-    //         let mut winner: Vec<u8> = Vec::new();
-    //         for d in 0..5 {
-    //             winner.push(self.card[4-d][d]);
-    //         }
-    //         return Some(winner);
-    //     }
-    //     None
-    // }
-
     fn score(&self) -> u32 {
         let mut score: u32 = 0;
-        for y in 0..5 {
-            for x in 0..5 {
+        for x in 0..5 {
+            for y in 0..5 {
                 if !self.marked[y][x] {
                     score += self.card[y][x] as u32;
                 }
@@ -157,9 +118,9 @@ impl fmt::Display for BingoCard {
                 } else {
                     t = v.to_string().white();
                 }
-                write!(f, "{:>2} ", t);
+                write!(f, "{:>2} ", t).unwrap();
             }
-            write!(f, "\n");
+            write!(f, "\n").unwrap();
         }
         write!(f, "\n")
     }
@@ -167,14 +128,12 @@ impl fmt::Display for BingoCard {
 
 #[derive(Clone, Debug)]
 struct BingoGame {
-    last_called: u8,
-    score: u32,
+    call_order: Vec<u8>,
+    cards: Vec<BingoCard>,
 }
 
 impl BingoGame {
     fn from_file(input: &Path) -> BingoGame {
-        println!("Path={:?}", input);
-        println!("c={:?}", fs::canonicalize(&input));
         let file = File::open(input).unwrap();
         let game_state: Vec<String> =
             BufReader::new(file)
@@ -185,10 +144,8 @@ impl BingoGame {
     }
 
     fn new(mut game_state: Vec<String>) -> BingoGame {
-        // First line is the calls
-        // Line break
-        // Card
-        let mut game_boards: Vec<BingoCard> = Vec::new();
+        /* First line is the number calls, and then a series of line-break and cards. */
+        let mut cards: Vec<BingoCard> = Vec::new();
         let call_order: Vec<u8> =
             game_state
             .remove(0)
@@ -196,44 +153,72 @@ impl BingoGame {
             .map(|v| v.parse::<u8>()
             .unwrap())
             .collect();
-        println!("call_order={:?}",call_order);
 
-        // Iterate over next chunks of newline
-        // and 5 x 5 game boards until end-of-lines
-        // Each of these [&String; 5] chunks should
-        // be passed to BingoBoard::new()
+        /* Iterate over next chunks of newline
+         * and 5 x 5 game boards until end-of-lines
+         * Each of these [&String; 5] chunks should
+         * be passed to BingoBoard::new()
+         */
         while game_state.len() > 0 && game_state.remove(0) == "" {
             let mut card_vecstr: Vec<String> = Vec::new();
             for _ in 0..5 {
                 card_vecstr.push(game_state.remove(0));
             }
             let card = BingoCard::new(card_vecstr);
-            println!("card=\n{}", card);
-            game_boards.push(card);
+            cards.push(card);
         }
 
+        
+        BingoGame {
+            call_order,
+            cards,
+        }
+    }
+
+    /* Returns the score of the winner.
+     * Winner is the first card to have 5-in-a-row. 
+     * Card score is the sum of all numbers that weren't called on the card.
+     * This is multiplied by the last number called to produce the score.
+     */
+    fn score_winner(&self) -> u32 {
         let mut last_called: u8 = 0;
         let mut score: u32 = 0;
-        'outer: for number in call_order {
-            println!("Calling number = {}", number);
-            for card in &mut game_boards {
-                card.call_number(number);
-                println!("card=\n{}", card);
-                if card.check_win() {
+        let mut cards = self.cards.clone();
+        'outer: for number in &self.call_order {
+            // println!("Calling number = {}", number);
+            for card in &mut cards {
+                card.call_number(number.clone());
+                if card.is_winner() {
                     score = card.score();
-                    last_called = number;
+                    last_called = number.clone();
                     break 'outer
                 }
             }
         }
-        BingoGame {
-            last_called,
-            score,
-        }
+        score = score * last_called as u32;
+        score
     }
-
-    fn final_score(&self) -> u32 {
-        return self.last_called as u32 * self.score;
+    
+    /* Returns the score of the loser.
+     * Loser is the last card to have 5-in-a-row. 
+     * Card score is the sum of all numbers that weren't called on the card.
+     * This is multiplied by the last number called to produce the score.
+     */
+    fn score_loser(&self) -> u32 {
+        let mut cards = self.cards.clone();
+        let mut last_called: u8 = 0;
+        let mut score: u32 = 0;
+        for number in &self.call_order {
+            cards.iter_mut().for_each(|c| c.call_number(number.clone()));
+            if cards.len() == 1 && cards[0].is_winner() {
+                last_called = number.clone();
+                score = cards[0].score();
+                break;
+            }
+            cards.retain(|c| !c.is_winner());
+        }
+        score = score * last_called as u32;
+        score
     }
 }
 
@@ -258,21 +243,31 @@ fn main() {
     };
 
     let bingo_game = BingoGame::from_file(input);
-    println!("Part 1: final_score={}", bingo_game.final_score());
+    println!("Part 1: score_winner={}", bingo_game.score_winner());
+    println!("Part 2: score_winner={}", bingo_game.score_loser());
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::{PathBuf};
     
     #[test]
     fn test_giantsquid_part1() {
         let mut input = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         input.push("giantsquid_test.txt");
-        const FINAL_SCORE: u32 = 4512;
+        const SCORE_WINNER: u32 = 4512;
         let bingo_game = BingoGame::from_file(&input);
-        assert_eq!(bingo_game.final_score(), FINAL_SCORE);
+        assert_eq!(bingo_game.score_winner(), SCORE_WINNER);
     }
 
+    #[test]
+    fn test_giantsquid_part2() {
+        let mut input = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        input.push("giantsquid_test.txt");
+        const SCORE_LOSER: u32 = 1924;
+        let bingo_game = BingoGame::from_file(&input);
+        assert_eq!(bingo_game.score_loser(), SCORE_LOSER);
+    }
   
 }
