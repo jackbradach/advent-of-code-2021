@@ -3,7 +3,6 @@
  */
 
 use std::collections::HashMap;
-use std::cmp::Ordering;
 use std::path::{Path};
 use std::io::{BufReader, BufRead};
 use std::fs::File;
@@ -11,12 +10,11 @@ use std::fmt;
 use std::cmp;
 
 use clap::{App, Arg};
-use colored::{ColoredString, Colorize};
 
 #[derive(Clone, Copy, Debug, Eq, Hash)]
 struct Vent {
-    x: u32,
-    y: u32,
+    x: i32,
+    y: i32,
 }
 
 impl PartialEq for Vent {
@@ -32,18 +30,18 @@ impl PartialEq for Vent {
 /* Line from point 1 -> point 2 */
 #[derive(Clone, Copy, Debug)]
 struct VentLine {
-    x1: u32,
-    y1: u32,
-    x2: u32,
-    y2: u32,
+    x1: i32,
+    y1: i32,
+    x2: i32,
+    y2: i32,
 }
 
 impl VentLine {
     fn from_string(text: &String) -> VentLine {
         // 0,9 -> 5,9
         let v: Vec<&str> = text.split(" -> ").collect();
-        let origin: Vec<u32> = v[0].split(",").map(|v| v.parse::<u32>().unwrap()).collect();
-        let ending: Vec<u32> = v[1].split(",").map(|v| v.parse::<u32>().unwrap()).collect();
+        let origin: Vec<i32> = v[0].split(",").map(|v| v.parse::<i32>().unwrap()).collect();
+        let ending: Vec<i32> = v[1].split(",").map(|v| v.parse::<i32>().unwrap()).collect();
         VentLine {
             x1: origin[0],
             y1: origin[1],
@@ -55,7 +53,7 @@ impl VentLine {
 
 #[derive(Debug)]
 struct VentsMap {
-    map: HashMap<Vent, u32>
+    map: HashMap<Vent, i32>
 }
 
 impl VentsMap {
@@ -83,33 +81,30 @@ impl VentsMap {
             for ventline in ventlines {
                 ventmap.apply_line(&ventline, use_diagonals);
             }
-        // println!("ventmap: {:?}", ventmap);        
         ventmap
     }
 
-    /* We're guaranteed that all ventlines will be */
+    /* Apply a line to the ventmap.  If an existing entry already exists for
+     * the Vent coordinate, it'll be incremented.  Interpreting diagonal
+     * lines happens when use_diagonals is set (eg, for part 2).
+     */
     fn apply_line(&mut self, ventline: &VentLine, use_diagonals: bool) {
-        // Determine if we're a horizontal or vertical line,
-        // call appropriate function to apply.
         if ventline.y1 == ventline.y2 {
             self.apply_horiz(ventline);
         } else if ventline.x1 == ventline.x2 {
             self.apply_vert(ventline);
         } else {
-            // println!("Skipping diagonal line: {:?}", ventline);
-            // let vent = Vent{ ventline.x1, ventline.x2, };
-            // self.map.insert(vent, v);
+            /* We only use diagonals on part 2. */
+            if use_diagonals {
+                self.apply_diagonal(ventline);
+            }
         }
     }
-
-    // FIXME - need to handle lines going from large->small direction.
 
     fn apply_horiz(&mut self, ventline: &VentLine) {
         let y = ventline.y1;
         let begin = cmp::min(ventline.x1, ventline.x2);
         let end = cmp::max(ventline.x1, ventline.x2);
-        // println!("Drawing horizontal line y={} from x1={} to x2={}",
-        //     y, begin, end);
         for x in begin..(end + 1) {
             let vent = Vent{ x, y, };
             self.increment_vent(&vent);
@@ -120,10 +115,18 @@ impl VentsMap {
         let x = ventline.x1;
         let begin = cmp::min(ventline.y1, ventline.y2);
         let end = cmp::max(ventline.y1, ventline.y2);
-        // println!("Drawing vertical line x={} from y1={} to y2={}",
-            // x, begin, end);
         for y in begin..(end + 1) {
             let vent = Vent{ x, y, };
+            self.increment_vent(&vent);
+        }
+    }
+
+    fn apply_diagonal(&mut self, ventline: &VentLine) {
+        let y_dir: i32 = if ventline.y2 > ventline.y1 { 1 } else { -1 };
+        let x_dir: i32 = if ventline.x2 > ventline.x1 { 1 } else { -1 };
+        let length: i32 = (ventline.x2 - ventline.x1).abs();
+        for i in 0..(length + 1) {
+            let vent = Vent{ x: ventline.x1 + (i * x_dir), y: ventline.y1 + (i * y_dir), };
             self.increment_vent(&vent);
         }
     }
@@ -131,11 +134,9 @@ impl VentsMap {
     fn increment_vent(&mut self, vent: &Vent) {
         if let Some(v) = self.map.get_mut(vent) {
             *v += 1;
-            // println!("({}, {}) = {}", vent.x, vent.y, *v);
         } else {
-            let v: u32 = 1;
+            let v: i32 = 1;
             self.map.insert(vent.clone(), v);
-            // println!("({}, {}) = {}", vent.x, vent.y, v);
         }
     }
 
@@ -149,12 +150,11 @@ impl VentsMap {
                 max_vent.y = vent.0.y;
             }
         }
-        // println!("max_vent = {:?}", max_vent);
         max_vent
     }
 
-    fn overlapping_vent_count(&self, threshold: u32) -> u32 {
-        self.map.iter().filter(|v| v.1 >= &threshold).count() as u32
+    fn overlapping_vent_count(&self, threshold: i32) -> i32 {
+        self.map.iter().filter(|v| v.1 >= &threshold).count() as i32
     }
 }
 
@@ -202,10 +202,12 @@ fn main() {
         }
     };
 
-    const OVERLAPPING_VENT_THRESHOLD: u32 = 2;
+    const OVERLAPPING_VENT_THRESHOLD: i32 = 2;
     let vents_map = VentsMap::from_file(&input, false);
-    // println!("{}", vents_map);
     println!("Part 1: Overlapping vent count: {}", vents_map.overlapping_vent_count(OVERLAPPING_VENT_THRESHOLD));
+
+    let vents_map = VentsMap::from_file(&input, true);
+    println!("Part 2: Overlapping vent count: {}", vents_map.overlapping_vent_count(OVERLAPPING_VENT_THRESHOLD));
 }
 
 #[cfg(test)]
@@ -225,11 +227,22 @@ mod tests {
     
     #[test]
     fn test_vents_part1() {
-        const OVERLAPPING_VENT_THRESHOLD: u32 = 2;
-        const OVERLAPPING_VENT_COUNT: u32 = 5;
+        const OVERLAPPING_VENT_THRESHOLD: i32 = 2;
+        const OVERLAPPING_VENT_COUNT: i32 = 5;
         let mut input = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         input.push("vents_test.txt");
         let vents_map = VentsMap::from_file(&input, false);
+        println!("{}", vents_map);
+        assert_eq!(vents_map.overlapping_vent_count(OVERLAPPING_VENT_THRESHOLD), OVERLAPPING_VENT_COUNT);
+    }
+
+    #[test]
+    fn test_vents_part2() {
+        const OVERLAPPING_VENT_THRESHOLD: i32 = 2;
+        const OVERLAPPING_VENT_COUNT: i32 = 12;
+        let mut input = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        input.push("vents_test.txt");
+        let vents_map = VentsMap::from_file(&input, true);
         println!("{}", vents_map);
         assert_eq!(vents_map.overlapping_vent_count(OVERLAPPING_VENT_THRESHOLD), OVERLAPPING_VENT_COUNT);
     }
