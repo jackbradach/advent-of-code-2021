@@ -1,0 +1,9 @@
+[package]
+name = "vents"
+version = "0.0.1"
+edition = "2018"
+
+
+[dependencies]
+clap = "3.0.0-beta.2"
+colored = "2.0.0"

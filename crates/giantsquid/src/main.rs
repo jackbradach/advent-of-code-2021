@@ -17,7 +17,6 @@ struct BingoCard {
 }
 
 impl BingoCard {
-
     fn new(card_raw: Vec<String>) -> BingoCard {
         let mut card: [[u8; 5]; 5] = [[0; 5]; 5];
         for y in 0..5 {
@@ -168,7 +167,6 @@ impl BingoGame {
             cards.push(card);
         }
 
-        
         BingoGame {
             call_order,
             cards,
