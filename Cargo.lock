@@ -200,6 +200,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "sevenseg"
+version = "0.0.1"
+dependencies = [
+ "clap",
+]
+
+[[package]]
+name = "smokebasin"
+version = "0.0.1"
+dependencies = [
+ "clap",
+]
+
+[[package]]
 name = "sonarsweep"
 version = "0.0.1"
 dependencies = [
@@ -273,7 +287,6 @@ name = "vents"
 version = "0.0.1"
 dependencies = [
  "clap",
- "colored",
 ]
 
 [[package]]
