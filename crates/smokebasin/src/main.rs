@@ -112,6 +112,11 @@ impl HeightMap {
         }
         Some(self.heights[((y * width) + x) as usize])
     }
+
+    /* For a given cell, find all the basins */
+    fn find_basin(&self, cell: &Cell) {
+
+    }
 }
 
 impl fmt::Display for HeightMap {
