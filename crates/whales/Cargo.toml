@@ -1,0 +1,8 @@
+[package]
+name = "whales"
+version = "0.0.1"
+edition = "2018"
+
+
+[dependencies]
+clap = "3.0.0-beta.2"
