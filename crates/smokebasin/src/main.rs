@@ -7,7 +7,8 @@ use std::io::{BufReader, BufRead};
 use std::fs::File;
 use std::fmt;
 use std::convert::TryInto;
-use clap::{App, Arg};
+
+use util;
 
 #[derive(Debug)]
 struct Cell {
@@ -132,25 +133,7 @@ impl fmt::Display for HeightMap {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("Smoke Basin")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 8: Smoke Basin")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
-
+    let input = util::advent_cli("Smoke Basin", 8);
     let heightmap = HeightMap::new(&input);
     println!("Part 1: Risk Level = {}", heightmap.risk_level());
 }

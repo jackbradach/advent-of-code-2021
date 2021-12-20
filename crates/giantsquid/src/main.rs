@@ -7,8 +7,9 @@ use std::io::{BufReader, BufRead};
 use std::fs::File;
 use std::fmt;
 
-use clap::{App, Arg};
 use colored::{ColoredString, Colorize};
+
+use util;
 
 #[derive(Clone, Copy, Debug)]
 struct BingoCard {
@@ -221,26 +222,8 @@ impl BingoGame {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("Giant Squid")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 4: Giant Squid")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
-
-    let bingo_game = BingoGame::from_file(input);
+    let input = util::advent_cli("Giant Squid", 4);
+    let bingo_game = BingoGame::from_file(&input);
     println!("Part 1: score_winner={}", bingo_game.score_winner());
     println!("Part 2: score_winner={}", bingo_game.score_loser());
 }

@@ -1,10 +1,11 @@
 /*
  * https://adventofcode.com/2021/day/2
  */
-use clap::{App, Arg};
 use std::path::Path;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
+
+use util;
 
 #[derive(Clone, Copy, Debug)]
 enum SubmarineDirection {
@@ -140,27 +141,9 @@ impl Submarine {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("Dive!")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 2: Dive!")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
-
+    let input = util::advent_cli("Dive!", 2);
     let mut submarine = Submarine::new();
-    let submarine_commands = SubmarineCommands::from_file(input);
+    let submarine_commands = SubmarineCommands::from_file(&input);
     submarine.apply_commands_wrong(&submarine_commands);
     println!("Part 1: x({}) * y({}) = {}",
         submarine.position_horizontal(),

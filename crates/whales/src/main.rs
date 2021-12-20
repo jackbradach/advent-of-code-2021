@@ -72,6 +72,7 @@ impl SubPositions {
     // FIXME - this could be way faster, but the naive implementation
     // FIXME - does arrive at a solution after a couple seconds.
     // FIXME - Good enough for a puzzle solution!
+    // FIXME - maybe Gauss' method?
     fn find_minimal_fuel_variable_burn(&self) -> u32 {
         let max_position = self.maximum_position();
         let mut min_fuel: Option<i32> = None;
@@ -111,7 +112,6 @@ fn main() {
         }
     };
 
-    // const OVERLAPPING_VENT_THRESHOLD: i32 = 2;
     let positions = SubPositions::from_file(&input);
     let min_fuel = positions.find_minimal_fuel_constant_burn();
     println!("Part 1: Minimum fuel: {}", min_fuel);

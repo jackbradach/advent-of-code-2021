@@ -1,10 +1,11 @@
 /*
  * https://adventofcode.com/2021/day/1
  */
-use clap::{App, Arg};
 use std::path::Path;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
+
+use util;
 
 struct SonarSweep {
     depths: Vec<u32>
@@ -57,26 +58,8 @@ impl SonarSweep {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("sonarsweep")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 1: Sonar Sweep")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
-
-    let sweep = SonarSweep::from_file(input);
+    let input = util::advent_cli("Sonar Sweep", 1);
+    let sweep = SonarSweep::from_file(&input);
     println!("Part 1: depth increases = {}", sweep.increase_count());
     println!("Part 2: depth increases = {}", sweep.increase_count_sliding_window(3));
 }

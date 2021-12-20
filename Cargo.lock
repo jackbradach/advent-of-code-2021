@@ -24,6 +24,7 @@ name = "bindiag"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]
@@ -79,6 +80,7 @@ name = "dive"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]
@@ -87,6 +89,7 @@ version = "0.0.1"
 dependencies = [
  "clap",
  "colored",
+ "util",
 ]
 
 [[package]]
@@ -128,6 +131,7 @@ name = "lanternfish"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]
@@ -204,6 +208,7 @@ name = "sevenseg"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]
@@ -211,6 +216,7 @@ name = "smokebasin"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]
@@ -218,6 +224,7 @@ name = "sonarsweep"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]
@@ -235,6 +242,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-xid",
+]
+
+[[package]]
+name = "syntax"
+version = "0.0.1"
+dependencies = [
+ "clap",
 ]
 
 [[package]]
@@ -283,10 +297,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
 
 [[package]]
+name = "util"
+version = "0.0.1"
+dependencies = [
+ "clap",
+]
+
+[[package]]
 name = "vents"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "util",
 ]
 
 [[package]]

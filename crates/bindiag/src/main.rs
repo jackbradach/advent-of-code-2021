@@ -1,11 +1,11 @@
 /*
  * https://adventofcode.com/2021/day/3
  */
-use clap::{App, Arg};
 use std::path::Path;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
 
+use util;
 
 #[derive(Clone, Debug)]
 struct BinaryDiagnostic {
@@ -14,9 +14,6 @@ struct BinaryDiagnostic {
 }
 
 impl BinaryDiagnostic {
-
-    // FIXME - needs to convert from binary string
-    // FIXME - also needs to count number of bits for report_width
     fn from_file(input: &Path) -> BinaryDiagnostic {
         let file = File::open(input).unwrap();
         let raw_report: Vec<String> =
@@ -150,26 +147,8 @@ impl BinaryDiagnostic {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("Binary Diagnostic")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 3: Binary Diagnostic")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
-
-    let diag = BinaryDiagnostic::from_file(input);
+    let input = util::advent_cli("Binary Diagnostic", 3);
+    let diag = BinaryDiagnostic::from_file(&input);
     println!("Part 1: gamma = {}, epsilon = {}, power = {}",
         diag.gamma(),
         diag.episilon(),
@@ -177,10 +156,10 @@ fn main() {
     );
 
     println!("Part 2: oxygen = {}, CO2 = {}, life support = {}",
-    diag.oxygen(),
-    diag.co2(),
-    diag.oxygen() * diag.co2()
-);
+        diag.oxygen(),
+        diag.co2(),
+        diag.oxygen() * diag.co2()
+    );
 }
 
 #[cfg(test)]

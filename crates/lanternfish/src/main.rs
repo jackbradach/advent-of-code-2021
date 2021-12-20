@@ -1,10 +1,11 @@
 /*
  * https://adventofcode.com/2021/day/6
  */
-use clap::{App, Arg};
 use std::path::Path;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
+
+use util;
 
 // Each bin in the Vec represents how many fish in the population have a particular
 // counter.  Each round, pop the head off (shifting everyone's counter down by 1),
@@ -61,26 +62,8 @@ impl Lanternfish {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("Lanternfish")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 6: Lanternfish")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
-
-    let fishes = Lanternfish::from_file(input);
+    let input = util::advent_cli("Lanternfish", 6);
+    let fishes = Lanternfish::from_file(&input);
     println!("Part 1: Population after 80 days = {}", fishes.population_after_day(80));
     println!("Part 2: Population after 256 days = {}", fishes.population_after_day(256));
 }

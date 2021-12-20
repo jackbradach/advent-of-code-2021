@@ -9,7 +9,7 @@ use std::fs::File;
 use std::fmt;
 use std::cmp;
 
-use clap::{App, Arg};
+use util;
 
 #[derive(Clone, Copy, Debug, Eq, Hash)]
 struct Vent {
@@ -183,24 +183,7 @@ impl fmt::Display for VentLine {
 }
 
 fn main() {
-    // Argument parsing using the Clap builder pattern.
-    let argmatches = App::new("Hydrothermal Vents")
-        .version("0.1")
-        .author("Jack Bradach <jack@bradach.net>")
-        .about("Advent of Code 2021 - Day 5: Hydrothermal Vents")
-        .arg(Arg::new("input")
-            .about("Input dataset from website")
-            .index(1)
-            .required(true))
-        .get_matches();
-
-    let input = match argmatches.value_of("input") {
-        Some(input) => Path::new(input),
-        None => {
-            eprintln!("No input data file specified!");
-            std::process::exit(1);
-        }
-    };
+    let input = util::advent_cli("Hydrothermal Vents", 5);
 
     const OVERLAPPING_VENT_THRESHOLD: i32 = 2;
     let vents_map = VentsMap::from_file(&input, false);
@@ -246,7 +229,4 @@ mod tests {
         println!("{}", vents_map);
         assert_eq!(vents_map.overlapping_vent_count(OVERLAPPING_VENT_THRESHOLD), OVERLAPPING_VENT_COUNT);
     }
-
-    
-  
 }
