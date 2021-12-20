@@ -69,10 +69,6 @@ impl SubPositions {
         min_fuel.unwrap() as u32
     }
 
-    // FIXME - this could be way faster, but the naive implementation
-    // FIXME - does arrive at a solution after a couple seconds.
-    // FIXME - Good enough for a puzzle solution!
-    // FIXME - maybe Gauss' method?
     fn find_minimal_fuel_variable_burn(&self) -> u32 {
         let max_position = self.maximum_position();
         let mut min_fuel: Option<i32> = None;
@@ -80,9 +76,8 @@ impl SubPositions {
             let mut fuel_cost:i32 = 0;
             for sub in &self.positions {
                 let distance = (sub.position as i32 - i as i32).abs();
-                for j in 0..distance {
-                    fuel_cost += j + 1;
-                }
+                let cost = (distance * (distance + 1)) / 2;
+                fuel_cost += cost;
             }
             if min_fuel.is_none() || (min_fuel.is_some() && fuel_cost < min_fuel.unwrap()) {
                 min_fuel = Some(fuel_cost);
